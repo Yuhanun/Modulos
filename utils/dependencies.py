@@ -3,7 +3,7 @@ import json
 
 from typing import Iterable, Tuple
 
-import git
+from utils.git_manager import get_local_repo_path, update_repo_local
 
 def get_dependencies_folder(dir: str = ".") -> str:
     return os.path.abspath(f"{dir}/.modulos/dependencies")
@@ -25,8 +25,6 @@ def add_depdency(name: str, version: str, dir: str = ".") -> bool:
     None if not found
     """
     
-
-
 def get_path(name: str, version: str, dir: str = ".") -> str:
     """
     Gets path of a certain dependency
@@ -54,9 +52,44 @@ def get_dependencies(dir: str = ".") -> Iterable[Tuple[str, str]]:
     Gets an iterable of tuples, (name, version) of dependencies for
     {dir}/modulos.toml
     """
+    with open(get_dependencies_file(dir)) as file:
+        data = json.load(file)
+
+    output = []
+    for name, value in data.items():
+        output.extend([(name, v, ) for v in value])
+
+    print(output)
+    return output
+
+def get_dependency_url(name: str, version: str, dir: str) -> str:
+    """
+    Gets the URL to a dependency
+    """
+    with open(get_local_repo_path(dir) + f"/{name}") as file:
+        data = json.load(file)
+    
+    return data['url'] + "?commit=" + data['versions'][version]['hash']
+
+def install_dependency(name: str, version: str, dir: str) -> bool:
+    """
+    Installs a dependency into {dir}/.modulos/dependencies/{name}/{version}
+    """
+    path = get_local_repo_path(dir)
+    url = get_dependency_url(name, version, dir)
+    print(url)
+    # with open(f"{path}/{name}") as file:
+        # data = json.load(file)
+    
+    # print(data)
+
 
 def install_dependencies(dir: str = "."):
     """
     Installs all dependencies for current modulos package
     :dir: Current modulos package dir
     """
+    print("Installing dependencies...")
+    update_repo_local(dir)
+    for name, version in get_dependencies(dir):
+        install_dependency(name, version, dir)

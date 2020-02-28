@@ -5,6 +5,7 @@ from typing import Iterable
 import distutils.spawn
 
 from utils import fileutils, config_handler, color
+from utils.dependencies import install_dependencies
 
 
 def generate_command(base_path: str, source_files: Iterable[str], header_directories: Iterable[str], dependencies: Iterable[str]):
@@ -39,7 +40,9 @@ def main(parser: argparse.Namespace) -> int:
     :parser: Argument parser used for command line input
     :return: integer status code, 0 == good
     """
-    base_path = (parser.dir + "/") or "."
+
+    base_path = parser.dir or "."
+    install_dependencies(base_path)
 
     if not config_handler.is_module(base_path):
         color.error(f"Directory {base_path} is not a modulos module")
