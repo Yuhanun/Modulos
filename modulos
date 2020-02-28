@@ -12,19 +12,27 @@ modules = {
     "add": add,
     "run": run
     # clean
-    # new 
+    # new
     # doc (doxygen?)
 }
 
 colorama.init(convert=True if "win" in sys.platform.lower() else None)
 
-parser = argparse.ArgumentParser(prog="modulos", description="Compile a C++ binary")
+parser = argparse.ArgumentParser(
+    prog="modulos", description="Compile a C++ binary")
 parser.add_argument("operation", choices=modules.keys())
 
-parser.add_argument("--name", default=None, help="Name of module, set only on `init`")
-parser.add_argument("--compiler", default=None, help="Path to compiler, set only on `init`")
-parser.add_argument("--version", default=None, help="C++ version, set only on `init`, only set the integer, such as `--version=17`")
-parser.add_argument("--dir", default=".", help="Directory for modulos to perform the action on, currently available for `init`")
+# init-specifics
+parser.add_argument("--name", default=None,
+                    help="Name of module, set only on `init`")
+parser.add_argument("--compiler", default=None,
+                    help="Path to compiler, set only on `init`")
+parser.add_argument("--version", default=None,
+                    help="C++ version, set only on `init`, only set the integer, such as `--version=17`")
+
+# any-command usage
+parser.add_argument("--dir", default=".",
+                    help="Directory for modulos to perform the action on")
 
 args = parser.parse_args()
 modules[args.operation].main(args)

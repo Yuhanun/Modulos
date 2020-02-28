@@ -25,13 +25,15 @@ directories = ["./path"]
 files = ["./test.cpp"]
 """
 
+
 def is_module(directory: str) -> str:
     return os.path.isfile(f"{directory}/modulos.toml")
+
 
 def get_output_path(directory: str, create: bool = True) -> str:
     """
     Gets output path from {directory}/modulos.toml
-    
+
     :directory: Directory to get the toml from
     :create: Whether to create the output directory or not if it doesn't exist yet
     """
@@ -46,7 +48,8 @@ def get_output_path(directory: str, create: bool = True) -> str:
     if len(project.keys()) == 0:
         return
 
-    output_dir = os.path.abspath(directory + "/" + project.get("output_folder", "bin"))
+    output_dir = os.path.abspath(
+        directory + "/" + project.get("output_folder", "bin"))
 
     if not os.path.isdir(output_dir):
         if not create:
@@ -54,6 +57,7 @@ def get_output_path(directory: str, create: bool = True) -> str:
         os.makedirs(output_dir)
 
     return output_dir + "/" + project.get("name") + ".out"
+
 
 def get_compiler(directory: str) -> str:
     """
@@ -69,6 +73,7 @@ def get_compiler(directory: str) -> str:
 
     return config.get('settings', {}).get('compiler')
 
+
 def load_config(current_dir: str = "") -> (bool, dict):
     """
     Loads a moduls config, from file modulos.toml in current dir
@@ -81,6 +86,7 @@ def load_config(current_dir: str = "") -> (bool, dict):
         return False, {}
 
     return True, toml.load(f"{current_dir}modulos.toml")
+
 
 def init_config(dir: str = ".", name: str = "", compiler: str = "", version: str = "", folder: str = ".") -> (bool, str):
     """
@@ -105,7 +111,7 @@ def init_config(dir: str = ".", name: str = "", compiler: str = "", version: str
 
     if os.path.isdir(f"{dir}/src"):
         return False, f"Directory {dir} already contains ./src"
-    
+
     if os.path.isdir(f"{dir}/src"):
         return False, f"Directory {dir} already contains ./include"
 

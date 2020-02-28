@@ -24,7 +24,8 @@ def get_files_matching(extensions: Iterable[str], base_path: str = "", relative:
 
     files = []
     for extension in extensions:
-        files_matching = glob.glob(f"{base_path}**/*.{extension}", recursive=True)
+        files_matching = glob.glob(
+            f"{base_path}**/*.{extension}", recursive=True)
         files.extend(
             map(os.path.abspath if not relative else lambda file: file,
                 files_matching)

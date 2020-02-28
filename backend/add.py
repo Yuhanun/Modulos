@@ -1,5 +1,6 @@
 import argparse
 
+
 def main(parser: argparse.Namespace) -> int:
     """
     Function that handles `modulos.add`

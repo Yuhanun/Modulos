@@ -22,6 +22,7 @@ def generate_command(base_path: str, source_files: Iterable[str], header_directo
 
     return True, command
 
+
 def main(parser: argparse.Namespace) -> int:
     """
     Function that handles `modulos.build`
@@ -39,8 +40,9 @@ def main(parser: argparse.Namespace) -> int:
     source_files = fileutils.get_files_matching(
         ["cpp", "cc", "cxx"], base_path=base_path)
     include_dirs = fileutils.get_include_dirs(f"{base_path}/include")
-    
-    status, data = generate_command(base_path, source_files, include_dirs, dependencies)
+
+    status, data = generate_command(
+        base_path, source_files, include_dirs, dependencies)
 
     if not status:
         color.error(data)
@@ -48,5 +50,6 @@ def main(parser: argparse.Namespace) -> int:
 
     compile_status = os.system(data)
 
-    color.write(f"Compiler exited with status: {compile_status}", not compile_status)
+    color.write(
+        f"Compiler exited with status: {compile_status}", not compile_status)
     return 0
