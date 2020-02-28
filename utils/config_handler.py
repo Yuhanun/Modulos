@@ -56,7 +56,7 @@ def get_output_path(directory: str, create: bool = True, add_binary: bool = True
             return
         os.makedirs(output_dir)
 
-    return output_dir + (("/" + get_name() + ".out") if add_binary else "")
+    return output_dir + (("/" + get_name(directory) + ".out") if add_binary else "")
 
 
 def get_name(directory: str) -> str:
