@@ -3,6 +3,11 @@ import os
 import glob
 from typing import Iterable, Union
 
+def get_all_folders(path: str = ".") -> Iterable[str]:
+    """
+    Literally: get_include_dirs(path)
+    """
+    return get_include_dirs(path)
 
 def get_include_dirs(path: str = ".") -> Iterable[str]:
     """

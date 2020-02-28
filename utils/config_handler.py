@@ -139,7 +139,7 @@ def init_config(dir: str = ".", name: str = "", compiler: str = "", version: str
 
     os.mkdir(f"{dir}/src")
     os.mkdir(f"{dir}/include")
-    os.makeidrs(f"{dir}/.modulos/dependencies")
+    os.makedirs(f"{dir}/.modulos/dependencies")
     with open(f"{dir}/.modulos/dependencies/dependencies.json", "a") as file:
         file.write("{}")
 
