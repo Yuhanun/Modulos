@@ -21,6 +21,9 @@ def generate_command(base_path: str, source_files: Iterable[str], header_directo
 
     command += f"{compiler}"
 
+    for header in header_directories:
+        command += f" -I{header}"
+
     for cpp_file in source_files:
         command += f" {cpp_file}"
 
@@ -45,7 +48,8 @@ def main(parser: argparse.Namespace) -> int:
     dependencies = []
     source_files = fileutils.get_files_matching(
         ["cpp", "cc", "cxx"], base_path=base_path)
-    include_dirs = fileutils.get_include_dirs(f"{base_path}/include")
+    include_dirs = fileutils.get_include_dirs(f"{base_path}include")
+    include_dirs.append(os.path.abspath(f"{base_path}include"))
 
     status, data = generate_command(
         base_path, source_files, include_dirs, dependencies)
