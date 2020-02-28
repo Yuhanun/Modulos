@@ -1,0 +1,13 @@
+[project]
+name = "test-module"
+version = "1.0.0"
+authors = []
+output_folder = "bin"
+
+[settings]
+cpp_version = "17"
+compiler = "/usr/bin/clang++"
+
+[dependencies]
+
+[exclude]

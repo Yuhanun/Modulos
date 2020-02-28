@@ -1,0 +1,19 @@
+[project]
+name = "{name}"
+version = "MAJOR.MINOR.PATCH"
+authors = ["FIRSTNAME LATNAME <email@email.ext>"]
+ouput_folder = "output"
+
+[settings]
+compiler = "/path/to/compiler"
+Wall = 1
+Wextra = 1
+exclude_errors = ["no-return"]
+
+[dependencies]
+nlohmann-json = "1.0.0"
+cpr = "1.0.3"
+
+[exclude]
+directories = ["./path"]
+files = ["./test.cpp"]
