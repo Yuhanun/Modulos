@@ -2,6 +2,7 @@ import os
 
 import argparse
 from typing import Iterable
+import distutils.spawn
 
 from utils import fileutils, config_handler, color
 
@@ -10,6 +11,11 @@ def generate_command(base_path: str, source_files: Iterable[str], header_directo
     command = ""
 
     compiler = config_handler.get_compiler(base_path)
+    if not compiler:
+        return False, f"Path \"{compiler}\" is not a valid compiler"
+
+    compiler = distutils.spawn.find_executable(compiler)
+
     if not compiler:
         return False, f"Path \"{compiler}\" is not a valid compiler"
 
