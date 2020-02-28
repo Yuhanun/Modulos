@@ -1,0 +1,9 @@
+{
+    "nlohmann-json": {
+        "1.0.0": {
+            "shared_libraries": [],
+            "header_dirs": [],
+            "dynamic_libraries": []
+        }
+    }
+}

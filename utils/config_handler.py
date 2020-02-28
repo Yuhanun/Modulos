@@ -139,7 +139,11 @@ def init_config(dir: str = ".", name: str = "", compiler: str = "", version: str
 
     os.mkdir(f"{dir}/src")
     os.mkdir(f"{dir}/include")
-    os.mkdir(f"{dir}/.modulos")
+    os.makeidrs(f"{dir}/.modulos/dependencies")
+    with open(f"{dir}/.modulos/dependencies/dependencies.json", "a") as file:
+        file.write("{}")
+
+    # os.makedirs(f"{dir}/.modulos/history")
 
     with open(f"{dir}/src/main.cpp", "a") as file:
         file.write("""#include <iostream>
