@@ -4,7 +4,7 @@ import sys
 import argparse
 import colorama
 
-from backend import add, build, init, run, clean
+from backend import add, build, init, run, clean, info
 
 modules = {
     "init": init,
@@ -12,6 +12,7 @@ modules = {
     "add": add,
     "run": run,
     "clean": clean,
+    "info": info,
     # new
     # doc (doxygen?)
 }
@@ -30,9 +31,15 @@ parser.add_argument("--compiler", default=None,
 parser.add_argument("--version", default=None,
                     help="C++ version, set only on `init`, only set the integer, such as `--version=17`")
 
+# info-specifics
+parser.add_argument("--dep", default=None,
+                    help="Dependency name, format: name=version")
+
 # any-command usage
 parser.add_argument("--dir", default=".",
                     help="Directory for modulos to perform the action on")
+
+
 
 args = parser.parse_args()
 args.dir += ("/" if args.dir[-1] != "/" else "")
