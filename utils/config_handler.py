@@ -30,7 +30,7 @@ def is_module(directory: str) -> str:
     return os.path.isfile(f"{directory}/modulos.toml")
 
 
-def get_output_path(directory: str, create: bool = True) -> str:
+def get_output_path(directory: str, create: bool = True, add_binary: bool = True) -> str:
     """
     Gets output path from {directory}/modulos.toml
 
@@ -49,15 +49,34 @@ def get_output_path(directory: str, create: bool = True) -> str:
         return
 
     output_dir = os.path.abspath(
-        directory + "/" + project.get("output_folder", "bin"))
+        directory + project.get("output_folder", "bin"))
 
     if not os.path.isdir(output_dir):
         if not create:
             return
         os.makedirs(output_dir)
 
-    return output_dir + "/" + project.get("name") + ".out"
+    return output_dir + (("/" + get_name() + ".out") if add_binary else "")
 
+
+def get_name(directory: str) -> str:
+    """
+    Gets the name from {directory}/modulos.toml
+
+    :directory: Directory to get the toml from
+    """
+
+    valid, config = load_config(directory)
+
+    if not valid:
+        return
+
+    project = config.get("project", {})
+
+    if len(project.keys()) == 0:
+        return
+
+    return project.get('name')
 
 def get_compiler(directory: str) -> str:
     """

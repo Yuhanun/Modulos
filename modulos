@@ -4,14 +4,14 @@ import sys
 import argparse
 import colorama
 
-from backend import add, build, init, run
+from backend import add, build, init, run, clean
 
 modules = {
     "init": init,
     "build": build,
     "add": add,
-    "run": run
-    # clean
+    "run": run,
+    "clean": clean,
     # new
     # doc (doxygen?)
 }
@@ -35,4 +35,5 @@ parser.add_argument("--dir", default=".",
                     help="Directory for modulos to perform the action on")
 
 args = parser.parse_args()
+args.dir += ("/" if args.dir[-1] != "/" else "")
 modules[args.operation].main(args)
