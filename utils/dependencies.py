@@ -87,6 +87,7 @@ def get_dependency_url(cfg: dict, version: str, dir: str) -> str:
 
 def build_dependency(dir: str, name: str, version: str):
     # build, modulos build probs but idk how
+    pass
 
 def install_dependency(name: str, version: str, dir: str) -> bool:
     """
