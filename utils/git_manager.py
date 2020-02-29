@@ -1,6 +1,9 @@
 import os
 import git
 
+def clone_dependency(dir: str, name: str, version: str, dep_url: str):
+    git.Git(f"{dir}.modulos/dependencies/{name}/{version}").clone(dep_url)
+
 def get_local_repo_path(dir: str) -> str:
     return os.path.abspath(f"{dir}.modulos/modulos-index")
 
