@@ -2,39 +2,9 @@ import os
 
 import argparse
 from typing import Iterable
-import distutils.spawn
 
 from utils import fileutils, config_handler, color
-from utils.dependencies import install_dependencies, get_dependency_binaries_includes
-
-
-def generate_command(base_path: str, source_files: Iterable[str], header_directories: Iterable[str], dependencies: Iterable[str]):
-    command = ""
-
-    dep_info = get_dependency_binaries_includes(base_path)
-    static_libs = dep_info['static_libraries']
-    header_directories.extend(dep_info['include_dirs'])
-
-    compiler = config_handler.get_compiler(base_path)
-    if not compiler:
-        return False, f"Path \"{compiler}\" is not a valid compiler"
-
-    compiler = distutils.spawn.find_executable(compiler)
-
-    if not compiler:
-        return False, f"Path \"{compiler}\" is not a valid compiler"
-
-    command += f"{compiler}"
-
-    for header in header_directories:
-        command += f" -I{header}"
-
-    for cpp_file in source_files:
-        command += f" {cpp_file}"
-
-    command += f" -o {config_handler.get_output_path(base_path)}"
-
-    return True, command
+from utils.dependencies import install_dependencies, get_dependency_binaries_includes, build_project
 
 
 def main(parser: argparse.Namespace) -> int:
@@ -44,30 +14,4 @@ def main(parser: argparse.Namespace) -> int:
     :parser: Argument parser used for command line input
     :return: integer status code, 0 == good
     """
-
-    base_path = parser.dir or "."
-    if not config_handler.is_module(base_path):
-        color.error(f"Directory {os.path.abspath(base_path)} is not a modulos module")
-        return 1
-
-    install_dependencies(base_path)
-
-
-    dependencies = []
-    source_files = fileutils.get_files_matching(
-        ["cpp", "cc", "cxx"], base_path=base_path)
-    include_dirs = fileutils.get_include_dirs(f"{base_path}include")
-    include_dirs.append(os.path.abspath(f"{base_path}include"))
-
-    status, data = generate_command(
-        base_path, source_files, include_dirs, dependencies)
-
-    if not status:
-        color.error(data)
-        return 1
-
-    compile_status = os.system(data)
-
-    color.write(
-        f"Compiler exited with status: {compile_status}", not compile_status)
-    return 0
+    return build_project(parser)

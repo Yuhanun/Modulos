@@ -1,13 +1,24 @@
 import os
 import json
+import distutils.spawn
 
 from typing import Iterable, Tuple
 
 from .git_manager import get_local_repo_path, update_repo_local, clone_dependency
-from .color import error
+from .color import error, write
 from .config_handler import load_config, is_module
+from .fileutils import get_files_matching, get_include_dirs
+from .config_handler import get_compiler, get_output_path
 
-from backend import build
+def is_valid_version(name: str, version: str, dir: str = "."):
+    dep_json = load_dependency_json(name, dir)
+    if dep_json is None:
+        return None
+
+    if version not in dep_json['versions']:
+        return list(dep_json['versions'].keys())
+
+    return True
 
 def get_dependencies_folder(dir: str = ".") -> str:
     return os.path.abspath(f"{dir}/.modulos/dependencies")
@@ -23,15 +34,6 @@ def get_dependencies_info(dir: str = ".") -> dict:
 
 def get_dependency_info(name: str, version: str, dir: str = ".") -> dict or None:
     return get_dependencies_info(dir).get(name, {}).get(version)
-
-
-def add_depdency(name: str, version: str, dir: str = ".") -> bool:
-    """
-    Adds a dependency to toml file,
-    false if already exists
-    true if not
-    None if not found
-    """
 
 
 def get_path(name: str, version: str, dir: str = ".") -> str:
@@ -73,6 +75,9 @@ def load_dependency_json(name: str, dir: str) -> dict:
     """
     Loads a dependency config
     """
+    if not os.path.isfile(get_local_repo_path(dir) + f"/{name}"):
+        return None
+
     with open(get_local_repo_path(dir) + f"/{name}") as file:
         return json.load(file)
 
@@ -99,7 +104,7 @@ def build_dependency(dir: str, name: str, version: str) -> bool:
     obj.dir = dep_dir
     current_dir = os.getcwd()
     os.chdir(dep_dir)
-    build.main(obj)
+    build_project(obj)
     os.chdir(current_dir)
 
 def set_dependency_info(dir: str, name: str, version: str, dep_json: dict):
@@ -153,6 +158,15 @@ def install_dependencies(dir: str = "."):
     print("Installing dependencies...")
     update_repo_local(dir)
     for name, version in get_dependencies(dir):
+        version_data = is_valid_version(name, version, dir)
+        if version_data is False:
+            error(f"Module with name \"{name}\" does not exist")
+            continue
+
+        if isinstance(version_data, list):
+            error(f"Module with name\"{name} does not have version: {version}\"\n     Valid Versions: {' '.join(version_data)}")
+            continue
+
         install_dependency(name, version, dir)
 
 def get_dependency_binaries_includes(dir: str = ".") -> dict:
@@ -173,5 +187,63 @@ def get_dependency_binaries_includes(dir: str = ".") -> dict:
                 [info[key].append(base_path + dep_file) for dep_file in version_info[key]]
     
     return info
+
+def build_project(parser):
+    base_path = parser.dir or "."
+    if not is_module(base_path):
+        error(f"Directory {os.path.abspath(base_path)} is not a modulos module")
+        return 1
+
+    install_dependencies(base_path)
+
+
+    dependencies = []
+    source_files = get_files_matching(
+        ["cpp", "cc", "cxx"], base_path=base_path)
+    include_dirs = get_include_dirs(f"{base_path}include")
+    include_dirs.append(os.path.abspath(f"{base_path}include"))
+
+    status, data = generate_command(
+        base_path, source_files, include_dirs, dependencies)
+
+    if not status:
+        error(data)
+        return 1
+
+    compile_status = os.system(data)
+
+    write(
+        f"Compiler exited with status: {compile_status}", not compile_status)
+    return 0
+
+
+def generate_command(base_path: str, source_files: Iterable[str], header_directories: Iterable[str], dependencies: Iterable[str]):
+    command = ""
+
+    dep_info = get_dependency_binaries_includes(base_path)
+    static_libs = dep_info['static_libraries']
+    header_directories.extend(dep_info['include_dirs'])
+
+    compiler = get_compiler(base_path)
+    if not compiler:
+        return False, f"Path \"{compiler}\" is not a valid compiler"
+
+    compiler = distutils.spawn.find_executable(compiler)
+
+    if not compiler:
+        return False, f"Path \"{compiler}\" is not a valid compiler"
+
+    command += f"{compiler}"
+
+    for header in header_directories:
+        command += f" -I{header}"
+
+    for cpp_file in source_files:
+        command += f" {cpp_file}"
+
+    command += f" -o {get_output_path(base_path)}"
+
+    return True, command
+
 
 # install_dependency("nlohmann-json", "1.0.0", "example-module/")
