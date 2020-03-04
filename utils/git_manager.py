@@ -1,8 +1,12 @@
 import os
 import git
 
-def clone_dependency(dir: str, name: str, version: str, dep_url: str):
-    git.Git(f"{dir}.modulos/dependencies/{name}/{version}").clone(dep_url)
+def clone_dependency(dir: str, name: str, version: str, url: str, commit: str):
+    path = f"{dir}.modulos/dependencies/{name}/{version}"
+    git.Git(path).clone(url, name)
+    repo = git.Repo(path + f"/{name}")
+    repo.submodule_update(recursive=True)
+    repo.head.reset(commit=commit)
 
 def get_local_repo_path(dir: str) -> str:
     return os.path.abspath(f"{dir}.modulos/modulos-index")
@@ -30,12 +34,12 @@ def pull_repo_local(dir: str = ".") -> str:
     :dir: Directory to clone into
     :return: The absolute path to git cache
     """
-    print("Fetching modulos indexes...", end='')
     git.Repo(get_local_repo_path(dir)).remote().pull()
-    print("\rFetched modulos indexes!   ")
 
 def update_repo_local(dir: str = ".") -> str:
+    print("Fetching modulos indexes...", end='')
     if not repo_local_exists(dir):
         clone_repo_local(dir)
     pull_repo_local(dir)
+    print("\rFetched modulos indexes!   ")
     return get_local_repo_path(dir)

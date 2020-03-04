@@ -5,11 +5,15 @@ from typing import Iterable
 import distutils.spawn
 
 from utils import fileutils, config_handler, color
-from utils.dependencies import install_dependencies
+from utils.dependencies import install_dependencies, get_dependency_binaries_includes
 
 
 def generate_command(base_path: str, source_files: Iterable[str], header_directories: Iterable[str], dependencies: Iterable[str]):
     command = ""
+
+    dep_info = get_dependency_binaries_includes(base_path)
+    static_libs = dep_info['static_libraries']
+    header_directories.extend(dep_info['include_dirs'])
 
     compiler = config_handler.get_compiler(base_path)
     if not compiler:

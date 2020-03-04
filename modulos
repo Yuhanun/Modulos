@@ -40,7 +40,6 @@ parser.add_argument("--dir", default=".",
                     help="Directory for modulos to perform the action on")
 
 
-
 args = parser.parse_args()
 args.dir += ("/" if args.dir[-1] != "/" else "")
 modules[args.operation].main(args)

@@ -3,8 +3,10 @@ import json
 
 from typing import Iterable, Tuple
 
-from utils.git_manager import get_local_repo_path, update_repo_local, clone_dependency
+from .git_manager import get_local_repo_path, update_repo_local, clone_dependency
+from .color import error
 
+from backend import build
 
 def get_dependencies_folder(dir: str = ".") -> str:
     return os.path.abspath(f"{dir}/.modulos/dependencies")
@@ -18,7 +20,7 @@ def get_dependencies_info(dir: str = ".") -> dict:
     return json.load(open(get_dependencies_file(dir)))
 
 
-def get_dependency_info(name: str, version: str, dir: str = ".") -> dict:
+def get_dependency_info(name: str, version: str, dir: str = ".") -> dict or None:
     return get_dependencies_info(dir).get(name, {}).get(version)
 
 
@@ -52,7 +54,7 @@ def is_installed(name: str, version: str, dir: str = ".") -> bool:
     :version: Version of dependency
     :dir: directory to search in (root, so `{dir}/.modulos/dependencies` is where it searches)
     """
-    return os.path.isdir(get_path(name, version, dir))
+    return os.path.isdir(get_path(name, version, dir) + "/" + name)
 
 
 def get_dependencies(dir: str = ".") -> Iterable[Tuple[str, str]]:
@@ -67,7 +69,6 @@ def get_dependencies(dir: str = ".") -> Iterable[Tuple[str, str]]:
     for name, value in data.items():
         output.extend([(name, v, ) for v in value])
 
-    print(output)
     return output
 
 
@@ -79,16 +80,43 @@ def load_dependency_json(name: str, dir: str) -> dict:
         return json.load(file)
 
 
-def get_dependency_url(cfg: dict, version: str, dir: str) -> str:
+def get_dependency_url(cfg: dict, version: str, dir: str) -> (str, str):
     """
     Gets the URL to a dependency
+    (url, hash)
     """
-    return cfg['url'] + "?commit=" + cfg['versions'][version]['hash']
+    return cfg['url'], cfg['versions'][version]['hash']
+
 
 def build_dependency(dir: str, name: str, version: str):
     # build, modulos build probs but idk how
-    pass
+    
+    class Args:
+        pass
 
+    dep_dir = get_path(name, version, dir)
+    obj = Args()
+    obj.dir = dep_dir
+    current_dir = os.getcwd()
+    os.chdir(dep_dir)
+    build.main(obj)
+    os.chdir(current_dir)
+
+def set_dependency_info(dir: str, name: str, version: str, dep_json: dict):
+    file_path = get_dependencies_file(dir)
+
+    with open(file_path, 'r') as file:
+        data = json.load(file)
+
+    # TODO
+    if name not in data:
+        data[name] = {}
+    data[name][version] = dep_json['versions'][version]
+    del data[name][version]['hash']
+
+    with open(file_path, 'w') as file:
+        json.dump(data, file, indent=4)
+ 
 def install_dependency(name: str, version: str, dir: str) -> bool:
     """
     Installs a dependency into {dir}/.modulos/dependencies/{name}/{version}
@@ -96,12 +124,23 @@ def install_dependency(name: str, version: str, dir: str) -> bool:
     False if already installed
     True if not
     """
-    if is_installed(name, version, dir):
-        return False
     dep_json = load_dependency_json(name, dir)
-    url = get_dependency_url(dep_json, version, dir)
-    clone_dependency(dir, name, version, url)
+    if is_installed(name, version, dir):
+        set_dependency_info(dir, name, version, dep_json)
+        return False
+
+    path = get_path(name, version, dir)
+    if os.path.isdir(path):
+        os.rmdir(path)
+    os.makedirs(path)
+    url, hash = get_dependency_url(dep_json, version, dir)
+    clone_dependency(dir, name, version, url, hash)
     build_dependency(dir, name, version)
+
+    if not is_installed:
+        error(f"Failed to install {name}:{version} in {os.path.abspath(dir)}")
+
+    set_dependency_info(dir, name, version, dep_json)
     return True
 
 
@@ -114,3 +153,24 @@ def install_dependencies(dir: str = "."):
     update_repo_local(dir)
     for name, version in get_dependencies(dir):
         install_dependency(name, version, dir)
+
+def get_dependency_binaries_includes(dir: str = ".") -> dict:
+    """
+    Gets all include dirs from dependencies
+    """
+    data = get_dependencies_info(dir)
+    info = {
+        'include_dirs': [],
+        'static_libraries': [],
+        'dynamic_libraries': [],
+    }
+
+    for name, versions in data.items():
+        for version_str, version_info in versions.items():
+            base_path = get_path(name, version_str, dir) + f"/{name}/"
+            for key in version_info:
+                [info[key].append(base_path + dep_file) for dep_file in version_info[key]]
+    
+    return info
+
+# install_dependency("nlohmann-json", "1.0.0", "example-module/")
