@@ -28,7 +28,7 @@ files = ["./test.cpp"]
 
 def is_module(directory: str) -> str:
     return os.path.isfile(f"{directory}/modulos.toml") \
-                and os.path.isfile(f"{directory}/.modulos/dependencies")
+                and os.path.isfile(f"{directory}/.modulos/dependencies/dependencies.json")
 
 
 
