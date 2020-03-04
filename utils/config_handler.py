@@ -27,7 +27,9 @@ files = ["./test.cpp"]
 
 
 def is_module(directory: str) -> str:
-    return os.path.isfile(f"{directory}/modulos.toml")
+    return os.path.isfile(f"{directory}/modulos.toml") \
+                and os.path.isfile(f"{directory}/.modulos/dependencies")
+
 
 
 def get_output_path(directory: str, create: bool = True, add_binary: bool = True) -> str:

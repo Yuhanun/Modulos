@@ -46,11 +46,12 @@ def main(parser: argparse.Namespace) -> int:
     """
 
     base_path = parser.dir or "."
+    if not config_handler.is_module(base_path):
+        color.error(f"Directory {os.path.abspath(base_path)} is not a modulos module")
+        return 1
+
     install_dependencies(base_path)
 
-    if not config_handler.is_module(base_path):
-        color.error(f"Directory {base_path} is not a modulos module")
-        return 1
 
     dependencies = []
     source_files = fileutils.get_files_matching(
