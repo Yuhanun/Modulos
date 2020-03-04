@@ -35,6 +35,10 @@ parser.add_argument("--version", default=None,
 parser.add_argument("--dep", default=None,
                     help="Dependency name, format: name=version")
 
+# add-specifics
+parser.add_argument("--lib", default=None,
+                    help="Library to install, format: {name}={version} (--lib=nlohmann-json=1.0.0)")
+
 # any-command usage
 parser.add_argument("--dir", default=".",
                     help="Directory for modulos to perform the action on")

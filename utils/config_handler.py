@@ -94,6 +94,11 @@ def get_compiler(directory: str) -> str:
 
     return config.get('settings', {}).get('compiler')
 
+def save_config(cfg: dict, current_dir: str = "") -> bool or str:
+    if not is_module(current_dir):
+        return False
+
+    return toml.dump(cfg, open(f"{current_dir}modulos.toml", 'w'))
 
 def load_config(current_dir: str = "") -> (bool, dict):
     """
@@ -103,7 +108,8 @@ def load_config(current_dir: str = "") -> (bool, dict):
     :return: Tuple with status and toml result
     False if file not found, True + dict if found
     """
-    if not os.path.isfile(f"{current_dir}modulos.toml"):
+
+    if not is_module(current_dir):
         return False, {}
 
     return True, toml.load(f"{current_dir}modulos.toml")

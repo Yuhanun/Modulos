@@ -164,7 +164,7 @@ def install_dependencies(dir: str = "."):
             continue
 
         if isinstance(version_data, list):
-            error(f"Module with name\"{name} does not have version: {version}\"\n     Valid Versions: {' '.join(version_data)}")
+            error(f"Module with name\"{name} does not have version: {version}\"\n       Valid Versions: {' '.join(version_data)}")
             continue
 
         install_dependency(name, version, dir)
