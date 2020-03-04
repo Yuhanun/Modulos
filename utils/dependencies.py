@@ -5,6 +5,7 @@ from typing import Iterable, Tuple
 
 from .git_manager import get_local_repo_path, update_repo_local, clone_dependency
 from .color import error
+from .config_handler import load_config, is_module
 
 from backend import build
 
@@ -62,14 +63,10 @@ def get_dependencies(dir: str = ".") -> Iterable[Tuple[str, str]]:
     Gets an iterable of tuples, (name, version) of dependencies for
     {dir}/modulos.toml
     """
-    with open(get_dependencies_file(dir)) as file:
-        data = json.load(file)
+    # data = get_dependencies(dir)
 
-    output = []
-    for name, value in data.items():
-        output.extend([(name, v, ) for v in value])
-
-    return output
+    valid, config = load_config(dir)
+    return tuple(config['dependencies'].items())
 
 
 def load_dependency_json(name: str, dir: str) -> dict:
@@ -88,13 +85,16 @@ def get_dependency_url(cfg: dict, version: str, dir: str) -> (str, str):
     return cfg['url'], cfg['versions'][version]['hash']
 
 
-def build_dependency(dir: str, name: str, version: str):
+def build_dependency(dir: str, name: str, version: str) -> bool:
     # build, modulos build probs but idk how
     
+    dep_dir = get_path(name, version, dir)
+    if not is_module(dep_dir):
+        return False
+
     class Args:
         pass
 
-    dep_dir = get_path(name, version, dir)
     obj = Args()
     obj.dir = dep_dir
     current_dir = os.getcwd()
@@ -115,7 +115,7 @@ def set_dependency_info(dir: str, name: str, version: str, dep_json: dict):
     del data[name][version]['hash']
 
     with open(file_path, 'w') as file:
-        json.dump(data, file, indent=4)
+        json.dump(data, file)
  
 def install_dependency(name: str, version: str, dir: str) -> bool:
     """
@@ -124,6 +124,7 @@ def install_dependency(name: str, version: str, dir: str) -> bool:
     False if already installed
     True if not
     """
+    print(f"Installing dependency: {name} = {version}")
     dep_json = load_dependency_json(name, dir)
     if is_installed(name, version, dir):
         set_dependency_info(dir, name, version, dep_json)
